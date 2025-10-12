@@ -3,3 +3,6 @@
 
 # Archives
 *.vlc
+
+# Test file
+test.txt
