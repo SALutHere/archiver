@@ -1,6 +1,9 @@
 package vlc
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestSplitByChunks(t *testing.T) {
 	tests := []struct {
@@ -32,145 +35,7 @@ func TestSplitByChunks(t *testing.T) {
 		}
 	}
 }
-func TestBinaryChunks_ToHex(t *testing.T) {
-	tests := []struct {
-		input    BinaryChunks
-		expected HexChunks
-	}{
-		{BinaryChunks{"00000000"}, HexChunks{"00"}},
-		{BinaryChunks{"00000001"}, HexChunks{"01"}},
-		{BinaryChunks{"11111111"}, HexChunks{"FF"}},
-		{BinaryChunks{"10101010"}, HexChunks{"AA"}},
-		{BinaryChunks{"00001111", "11110000"}, HexChunks{"0F", "F0"}},
-		{BinaryChunks{"00000010", "00000011"}, HexChunks{"02", "03"}},
-		{BinaryChunks{}, HexChunks{}},
-	}
 
-	for _, tt := range tests {
-		result := tt.input.ToHex()
-		if len(result) != len(tt.expected) {
-			t.Errorf("BinaryChunks(%v).ToHex() length = %d; want %d", tt.input, len(result), len(tt.expected))
-			continue
-		}
-		for i := range result {
-			if result[i] != tt.expected[i] {
-				t.Errorf("BinaryChunks(%v).ToHex()[%d] = %q; want %q", tt.input, i, result[i], tt.expected[i])
-			}
-		}
-	}
-}
-func TestNewHexChunks(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected HexChunks
-	}{
-		{"", HexChunks{""}},
-		{"AA", HexChunks{"AA"}},
-		{"AA BB CC", HexChunks{"AA", "BB", "CC"}},
-		{"01 02 03 04", HexChunks{"01", "02", "03", "04"}},
-		{"FF", HexChunks{"FF"}},
-		{"0A 0B", HexChunks{"0A", "0B"}},
-		{"AA  BB  CC", HexChunks{"AA", "", "BB", "", "CC"}},
-	}
-
-	for _, tt := range tests {
-		result := NewHexChunks(tt.input)
-		if len(result) != len(tt.expected) {
-			t.Errorf("NewHexChunks(%q) length = %d; want %d", tt.input, len(result), len(tt.expected))
-			continue
-		}
-		for i := range result {
-			if result[i] != tt.expected[i] {
-				t.Errorf("NewHexChunks(%q)[%d] = %q; want %q", tt.input, i, result[i], tt.expected[i])
-			}
-		}
-	}
-}
-func TestHexChunk_ToBinary(t *testing.T) {
-	tests := []struct {
-		input    HexChunk
-		expected BinaryChunk
-	}{
-		{"00", "00000000"},
-		{"01", "00000001"},
-		{"FF", "11111111"},
-		{"AA", "10101010"},
-		{"0F", "00001111"},
-		{"F0", "11110000"},
-		{"02", "00000010"},
-		{"03", "00000011"},
-		{"7F", "01111111"},
-		{"80", "10000000"},
-		{"0A", "00001010"},
-		{"B7", "10110111"},
-	}
-
-	for _, tt := range tests {
-		result := tt.input.ToBinary()
-		if result != tt.expected {
-			t.Errorf("HexChunk(%q).ToBinary() = %q; want %q", tt.input, result, tt.expected)
-		}
-	}
-
-	// Test invalid input (should panic)
-	invalidInputs := []HexChunk{"ZZ", "G1", "123", ""}
-	for _, input := range invalidInputs {
-		func() {
-			defer func() {
-				if r := recover(); r == nil {
-					t.Errorf("HexChunk(%q).ToBinary() did not panic on invalid input", input)
-				}
-			}()
-			_ = input.ToBinary()
-		}()
-	}
-}
-func TestHexChunks_ToBinary(t *testing.T) {
-	tests := []struct {
-		input    HexChunks
-		expected BinaryChunks
-	}{
-		{HexChunks{"00"}, BinaryChunks{"00000000"}},
-		{HexChunks{"01"}, BinaryChunks{"00000001"}},
-		{HexChunks{"FF"}, BinaryChunks{"11111111"}},
-		{HexChunks{"AA"}, BinaryChunks{"10101010"}},
-		{HexChunks{"0F", "F0"}, BinaryChunks{"00001111", "11110000"}},
-		{HexChunks{"02", "03"}, BinaryChunks{"00000010", "00000011"}},
-		{HexChunks{}, BinaryChunks{}},
-	}
-
-	for _, tt := range tests {
-		result := tt.input.ToBinary()
-		if len(result) != len(tt.expected) {
-			t.Errorf("HexChunks(%v).ToBinary() length = %d; want %d", tt.input, len(result), len(tt.expected))
-			continue
-		}
-		for i := range result {
-			if result[i] != tt.expected[i] {
-				t.Errorf("HexChunks(%v).ToBinary()[%d] = %q; want %q", tt.input, i, result[i], tt.expected[i])
-			}
-		}
-	}
-
-	// Test invalid input (should panic)
-	invalidInputs := []HexChunks{
-		{"ZZ"},
-		{"G1"},
-		{"123"},
-		{""},
-		{"AA", "ZZ"},
-	}
-	for _, input := range invalidInputs {
-		func() {
-			defer func() {
-				if r := recover(); r == nil {
-					t.Errorf("HexChunks(%v).ToBinary() did not panic on invalid input", input)
-				}
-			}()
-			_ = input.ToBinary()
-		}()
-	}
-}
 func TestBinaryChunks_Join(t *testing.T) {
 	tests := []struct {
 		input    BinaryChunks
@@ -189,5 +54,26 @@ func TestBinaryChunks_Join(t *testing.T) {
 		if result != tt.expected {
 			t.Errorf("BinaryChunks(%v).Join() = %q; want %q", tt.input, result, tt.expected)
 		}
+	}
+}
+
+func TestNewBinChunks(t *testing.T) {
+	tests := []struct {
+		name string
+		data []byte
+		want BinaryChunks
+	}{
+		{
+			name: "base test",
+			data: []byte{20, 30, 60, 18},
+			want: BinaryChunks{"00010100", "00011110", "00111100", "00010010"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewBinChunks(tt.data); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewBinChunks() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

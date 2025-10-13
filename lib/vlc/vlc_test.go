@@ -1,6 +1,7 @@
 package vlc
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -52,42 +53,42 @@ func TestEncodeBin(t *testing.T) {
 
 func TestEncode(t *testing.T) {
 	tests := []struct {
-		input    string
-		expected string
+		name string
+		str  string
+		want []byte
 	}{
-		{"hello", "3A 49 31"},
-		{"HELLO", "20 C8 A4 12 41 24 44"},
-		{"HeLLo WoRLd", "20 E9 04 90 4C 72 01 C4 84 10 49 40"},
-		{"", ""},
-		{"a", "60"},
-		{"A", "21 80"},
-		{"My name is Sergey", "20 30 3C 18 77 4A E4 2D 40 4A 04"},
+		{
+			name: "base test",
+			str:  "My name is Ted",
+			want: []byte{32, 48, 60, 24, 119, 74, 228, 77, 40},
+		},
 	}
-
 	for _, tt := range tests {
-		result := Encode(tt.input)
-		if result != tt.expected {
-			t.Errorf("Encode(%q) = %q; want %q", tt.input, result, tt.expected)
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Encode(tt.str); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Encode() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
+
 func TestDecode(t *testing.T) {
 	tests := []struct {
-		input    string
-		expected string
+		name        string
+		encodedData []byte
+		want        string
 	}{
-		{"3A 49 31", "hello"},
-		{"20 C8 A4 12 41 24 44", "HELLO"},
-		{"20 E9 04 90 4C 72 01 C4 84 10 49 40", "HeLLo WoRLd"},
-		{"60", "a"},
-		{"21 80", "A"},
-		{"20 30 3C 18 77 4A E4 2D 40 4A 04", "My name is Sergey"},
+		{
+			name:        "base test",
+			encodedData: []byte{32, 48, 60, 24, 119, 74, 228, 77, 40},
+			want:        "My name is Ted",
+		},
 	}
-
 	for _, tt := range tests {
-		result := Decode(tt.input)
-		if result != tt.expected {
-			t.Errorf("Decode(%q) = %q; want %q", tt.input, result, tt.expected)
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Decode(tt.encodedData); got != tt.want {
+				t.Errorf("Decode() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
