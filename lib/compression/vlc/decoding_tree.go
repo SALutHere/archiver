@@ -13,6 +13,7 @@ func (et encodingTable) DecodingTree() DecodingTree {
 	for ch, code := range et {
 		res.Add(code, ch)
 	}
+
 	return res
 }
 

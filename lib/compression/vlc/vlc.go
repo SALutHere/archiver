@@ -5,13 +5,19 @@ import (
 	"unicode"
 )
 
-func Encode(str string) []byte {
+type EncoderDecoder struct{}
+
+func New() EncoderDecoder {
+	return EncoderDecoder{}
+}
+
+func (_ EncoderDecoder) Encode(str string) []byte {
 	str = prepareText(str)
 	chunks := splitByChunks(encodeBin(str), chunkSize)
 	return chunks.Bytes()
 }
 
-func Decode(encodedData []byte) string {
+func (_ EncoderDecoder) Decode(encodedData []byte) string {
 	bString := NewBinChunks(encodedData).Join()
 	dTree := getEncodingTable().DecodingTree()
 	return exportText(dTree.Decode(bString))
