@@ -45,7 +45,7 @@ func TestEncodingTable_DecodingTree(t *testing.T) {
 	for _, tt := range tests {
 		result := tt.input.DecodingTree()
 		if !reflect.DeepEqual(result, tt.expected) {
-			t.Errorf("encodingTable.DecodingTree() = %v, expected %v", result, tt.expected)
+			t.Errorf("encodingTable.decodingTree() = %v, expected %v", result, tt.expected)
 		}
 	}
 }
