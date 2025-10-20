@@ -1,11 +1,9 @@
 # Executable files
 *.exe
 
-# Archives
+# Test files
+*.txt
 *.vlc
-
-# Test file
-test.txt
 
 # IDE's folders
 .idea
